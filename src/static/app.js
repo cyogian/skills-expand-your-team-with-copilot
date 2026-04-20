@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
+  let sharedActivityFromUrl = "";
 
   // Authentication state
   let currentUser = null;
@@ -115,6 +116,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Set authentication class on body
     updateAuthBodyClass();
+  }
+
+  function initializeSharedActivityFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activityFromUrl = urlParams.get("activity");
+    sharedActivityFromUrl = activityFromUrl ? activityFromUrl.trim() : "";
   }
 
   // Validate user session with the server
@@ -470,12 +477,37 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.entries(filteredActivities).forEach(([name, details]) => {
       renderActivityCard(name, details);
     });
+
+    highlightSharedActivity();
+  }
+
+  function highlightSharedActivity() {
+    if (!sharedActivityFromUrl) {
+      return;
+    }
+
+    const matchingCard = Array.from(
+      document.querySelectorAll(".activity-card")
+    ).find((card) => card.dataset.activityName === sharedActivityFromUrl);
+
+    if (!matchingCard) {
+      return;
+    }
+
+    matchingCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    matchingCard.classList.add("shared-activity-highlight");
+    setTimeout(() => {
+      matchingCard.classList.remove("shared-activity-highlight");
+    }, 3000);
+
+    sharedActivityFromUrl = "";
   }
 
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
     activityCard.className = "activity-card";
+    activityCard.dataset.activityName = name;
 
     // Calculate spots and capacity
     const totalSpots = details.max_participants;
@@ -498,10 +530,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
+    const shortDescription =
+      details.description.length > 120
+        ? `${details.description.slice(0, 117)}...`
+        : details.description;
     const shareUrl = `${window.location.origin}${window.location.pathname}?activity=${encodeURIComponent(
       name
     )}`;
-    const shareText = `Check out ${name} at Mergington High School! ${details.description}`;
+    const shareText = `Check out ${name} at Mergington High School! ${shortDescription}`;
     const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
       `${shareText} ${shareUrl}`
     )}`;
@@ -585,7 +621,7 @@ document.addEventListener("DOMContentLoaded", () => {
           href="${whatsappShareUrl}"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Share ${name} on WhatsApp"
+          aria-label="Share on WhatsApp"
         >
           WhatsApp
         </a>
@@ -594,7 +630,7 @@ document.addEventListener("DOMContentLoaded", () => {
           href="${xShareUrl}"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Share ${name} on X"
+          aria-label="Share on X"
         >
           X
         </a>
@@ -603,7 +639,7 @@ document.addEventListener("DOMContentLoaded", () => {
           class="share-button copy-share-button"
           data-share-url="${shareUrl}"
           data-activity-name="${name}"
-          aria-label="Copy share link for ${name}"
+          aria-label="Copy activity link"
         >
           Copy Link
         </button>
@@ -640,6 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(shareUrl);
       } else {
+        // Deprecated fallback for browsers/environments without modern clipboard access.
         const textArea = document.createElement("textarea");
         textArea.value = shareUrl;
         textArea.setAttribute("readonly", "");
@@ -931,6 +968,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize app
   checkAuthentication();
+  initializeSharedActivityFromUrl();
   initializeFilters();
   fetchActivities();
 });
