@@ -51,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
     afternoon: { start: "15:00", end: "18:00" }, // After school hours
     weekend: { days: ["Saturday", "Sunday"] }, // Weekend days
   };
-  const SCHOOL_NAME = "Mergington High School";
   const MAX_SHARE_DESCRIPTION_LENGTH = 120;
 
   function truncateWithEllipsis(text, maxLength) {
@@ -60,6 +59,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     return `${text.slice(0, maxLength - 3)}...`;
+  }
+
+  function getSchoolName() {
+    const schoolHeading = document.querySelector("header h1");
+    return schoolHeading ? schoolHeading.textContent.trim() : "our school";
   }
 
   // Initialize filters from active elements
@@ -547,7 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const shareUrl = `${window.location.origin}${window.location.pathname}?activity=${encodeURIComponent(
       name
     )}`;
-    const shareText = `Check out ${name} at ${SCHOOL_NAME}! ${shortDescription}`;
+    const shareText = `Check out ${name} at ${getSchoolName()}! ${shortDescription}`;
     const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
       `${shareText} ${shareUrl}`
     )}`;
