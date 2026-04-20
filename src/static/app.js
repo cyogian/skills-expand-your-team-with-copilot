@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     afternoon: { start: "15:00", end: "18:00" }, // After school hours
     weekend: { days: ["Saturday", "Sunday"] }, // Weekend days
   };
+  const MAX_SHARE_DESCRIPTION_LENGTH = 120;
 
   // Initialize filters from active elements
   function initializeFilters() {
@@ -531,8 +532,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
     const shortDescription =
-      details.description.length > 120
-        ? `${details.description.slice(0, 117)}...`
+      details.description.length > MAX_SHARE_DESCRIPTION_LENGTH
+        ? `${details.description.slice(0, MAX_SHARE_DESCRIPTION_LENGTH - 3)}...`
         : details.description;
     const shareUrl = `${window.location.origin}${window.location.pathname}?activity=${encodeURIComponent(
       name
@@ -680,6 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const textArea = document.createElement("textarea");
         textArea.value = shareUrl;
         textArea.setAttribute("readonly", "");
+        textArea.setAttribute("aria-hidden", "true");
         textArea.style.position = "absolute";
         textArea.style.left = "-9999px";
         document.body.appendChild(textArea);
@@ -691,7 +693,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      showMessage(`${activityName} link copied.`, "success");
+      showMessage(`Activity link for ${activityName} copied to clipboard.`, "success");
     } catch (error) {
       console.error("Error copying share link:", error);
       showMessage("Could not copy the link. Please try again.", "error");
