@@ -51,7 +51,16 @@ document.addEventListener("DOMContentLoaded", () => {
     afternoon: { start: "15:00", end: "18:00" }, // After school hours
     weekend: { days: ["Saturday", "Sunday"] }, // Weekend days
   };
+  const SCHOOL_NAME = "Mergington High School";
   const MAX_SHARE_DESCRIPTION_LENGTH = 120;
+
+  function truncateWithEllipsis(text, maxLength) {
+    if (text.length <= maxLength) {
+      return text;
+    }
+
+    return `${text.slice(0, maxLength - 3)}...`;
+  }
 
   // Initialize filters from active elements
   function initializeFilters() {
@@ -531,14 +540,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
-    const shortDescription =
-      details.description.length > MAX_SHARE_DESCRIPTION_LENGTH
-        ? `${details.description.slice(0, MAX_SHARE_DESCRIPTION_LENGTH - 3)}...`
-        : details.description;
+    const shortDescription = truncateWithEllipsis(
+      details.description,
+      MAX_SHARE_DESCRIPTION_LENGTH
+    );
     const shareUrl = `${window.location.origin}${window.location.pathname}?activity=${encodeURIComponent(
       name
     )}`;
-    const shareText = `Check out ${name} at Mergington High School! ${shortDescription}`;
+    const shareText = `Check out ${name} at ${SCHOOL_NAME}! ${shortDescription}`;
     const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
       `${shareText} ${shareUrl}`
     )}`;
@@ -674,6 +683,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const activityName = event.currentTarget.dataset.activityName;
 
     try {
+      // Clipboard API requires a secure context (HTTPS or localhost).
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(shareUrl);
       } else {
