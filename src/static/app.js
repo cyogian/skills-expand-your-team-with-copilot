@@ -676,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(shareUrl);
       } else {
-        // Deprecated fallback for browsers/environments without modern clipboard access.
+        // Fallback for browsers without clipboard API support or non-secure contexts.
         const textArea = document.createElement("textarea");
         textArea.value = shareUrl;
         textArea.setAttribute("readonly", "");
@@ -684,8 +684,11 @@ document.addEventListener("DOMContentLoaded", () => {
         textArea.style.left = "-9999px";
         document.body.appendChild(textArea);
         textArea.select();
-        document.execCommand("copy");
+        const copied = document.execCommand("copy");
         document.body.removeChild(textArea);
+        if (!copied) {
+          throw new Error("Fallback copy command failed.");
+        }
       }
 
       showMessage(`${activityName} link copied.`, "success");
