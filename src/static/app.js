@@ -498,6 +498,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
+    const shareUrl = `${window.location.origin}${window.location.pathname}?activity=${encodeURIComponent(
+      name
+    )}`;
+    const shareText = `Check out ${name} at Mergington High School! ${details.description}`;
+    const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent(
+      `${shareText} ${shareUrl}`
+    )}`;
+    const xShareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(
+      shareText
+    )}&url=${encodeURIComponent(shareUrl)}`;
 
     // Create activity tag
     const tagHtml = `
@@ -569,6 +579,35 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="share-actions">
+        <a
+          class="share-button share-button-link"
+          href="${whatsappShareUrl}"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share ${name} on WhatsApp"
+        >
+          WhatsApp
+        </a>
+        <a
+          class="share-button share-button-link"
+          href="${xShareUrl}"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Share ${name} on X"
+        >
+          X
+        </a>
+        <button
+          type="button"
+          class="share-button copy-share-button"
+          data-share-url="${shareUrl}"
+          data-activity-name="${name}"
+          aria-label="Copy share link for ${name}"
+        >
+          Copy Link
+        </button>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -587,7 +626,36 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    const copyShareButton = activityCard.querySelector(".copy-share-button");
+    copyShareButton.addEventListener("click", handleCopyShareLink);
+
     activitiesList.appendChild(activityCard);
+  }
+
+  async function handleCopyShareLink(event) {
+    const shareUrl = event.currentTarget.dataset.shareUrl;
+    const activityName = event.currentTarget.dataset.activityName;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = shareUrl;
+        textArea.setAttribute("readonly", "");
+        textArea.style.position = "absolute";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
+      showMessage(`${activityName} link copied.`, "success");
+    } catch (error) {
+      console.error("Error copying share link:", error);
+      showMessage("Could not copy the link. Please try again.", "error");
+    }
   }
 
   // Event listeners for search and filter
